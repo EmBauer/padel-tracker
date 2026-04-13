@@ -8,9 +8,10 @@ type PlayerRowProps = {
   winPoints: number;
   tiePoints: number;
   onResult: (playerId: string, outcome: Outcome) => void;
+  onUndo: (playerId: string) => void;
 };
 
-export function PlayerRow({ player, winPoints, tiePoints, onResult }: PlayerRowProps) {
+export function PlayerRow({ player, winPoints, tiePoints, onResult, onUndo }: PlayerRowProps) {
   const iconPath = `/players/${player.id}.png`;
   const initials = player.name
     .split(" ")
@@ -27,8 +28,8 @@ export function PlayerRow({ player, winPoints, tiePoints, onResult }: PlayerRowP
             <Image
               src={iconPath}
               alt={`${player.name} avatar`}
-              width={28}
-              height={28}
+              width={52}
+              height={52}
               loading="lazy"
               onError={(event) => {
                 event.currentTarget.style.display = "none";
@@ -58,6 +59,15 @@ export function PlayerRow({ player, winPoints, tiePoints, onResult }: PlayerRowP
           </button>
           <button type="button" className="action loss" onClick={() => onResult(player.id, "loss")}>
             Loss
+          </button>
+          <button
+            type="button"
+            className="action undo"
+            onClick={() => onUndo(player.id)}
+            disabled={!player.lastOutcome}
+            title={player.lastOutcome ? `Undo ${player.lastOutcome}` : "No action to undo"}
+          >
+            ↶
           </button>
         </div>
       </td>

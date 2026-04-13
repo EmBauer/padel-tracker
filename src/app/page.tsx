@@ -24,14 +24,38 @@ function applyOutcome(scoreboard: ScoreboardData, playerId: string, outcome: Out
       }
 
       if (outcome === "win") {
-        return { ...player, wins: player.wins + 1 };
+        return { ...player, wins: player.wins + 1, lastOutcome: "win" };
       }
 
       if (outcome === "tie") {
-        return { ...player, ties: player.ties + 1 };
+        return { ...player, ties: player.ties + 1, lastOutcome: "tie" };
       }
 
-      return { ...player, losses: player.losses + 1 };
+      return { ...player, losses: player.losses + 1, lastOutcome: "loss" };
+    }),
+  };
+}
+
+function undoLastAction(scoreboard: ScoreboardData, playerId: string): ScoreboardData | null {
+  return {
+    ...scoreboard,
+    players: scoreboard.players.map((player) => {
+      if (player.id !== playerId || !player.lastOutcome) {
+        return player;
+      }
+
+      const lastOutcome = player.lastOutcome;
+      let updated = { ...player, lastOutcome: null };
+
+      if (lastOutcome === "win") {
+        updated = { ...updated, wins: Math.max(0, player.wins - 1) };
+      } else if (lastOutcome === "tie") {
+        updated = { ...updated, ties: Math.max(0, player.ties - 1) };
+      } else if (lastOutcome === "loss") {
+        updated = { ...updated, losses: Math.max(0, player.losses - 1) };
+      }
+
+      return updated;
     }),
   };
 }
@@ -104,6 +128,17 @@ export default function Home() {
     }
     setDraft(applyOutcome(draft, playerId, outcome));
     setStatusMessage("Unsaved changes.");
+  }
+
+  function handleUndo(playerId: string) {
+    if (!draft) {
+      return;
+    }
+    const updated = undoLastAction(draft, playerId);
+    if (updated) {
+      setDraft(updated);
+      setStatusMessage("Unsaved changes.");
+    }
   }
 
   function handleWinPointsChange(value: number) {
@@ -241,6 +276,7 @@ export default function Home() {
                   winPoints={draft.winPoints}
                   tiePoints={draft.tiePoints}
                   onResult={handleOutcome}
+                  onUndo={handleUndo}
                 />
               ))}
             </tbody>

@@ -6,6 +6,7 @@ export type PlayerStat = {
   wins: number;
   losses: number;
   ties: number;
+  lastOutcome: Outcome | null;
 };
 
 export type ScoreboardData = {
